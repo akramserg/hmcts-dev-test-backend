@@ -1,68 +1,67 @@
 package uk.gov.hmcts.reform.dev.services;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.dev.dto.CreateTaskRequest;
 import uk.gov.hmcts.reform.dev.dto.TaskResponse;
 import uk.gov.hmcts.reform.dev.dto.UpdateTaskStatusRequest;
-import uk.gov.hmcts.reform.dev.models.TaskStatus;
-import java.time.LocalDateTime;
+import uk.gov.hmcts.reform.dev.exceptions.TaskNotFoundException;
+import uk.gov.hmcts.reform.dev.models.Task;
+import uk.gov.hmcts.reform.dev.repositories.TaskRepository;
+
 import java.util.List;
 
 @Service
 public class TaskServiceImpl implements TaskService {
 
-    // TODO: remove once repository is implemented
-    private TaskResponse stubTask(Long id) {
-        return new TaskResponse(
-            id,
-            "Stub Title",
-            "Stub Description",
-            TaskStatus.OPEN,
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now(),
-            LocalDateTime.now()
-        );
+    private final TaskRepository taskRepository;
+
+    public TaskServiceImpl(TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
     @Override
     public List<TaskResponse> getAllTasks() {
-        return List.of();
+        return taskRepository.findAll()
+            .stream()
+            .map(TaskResponse::from)
+            .toList();
     }
 
     @Override
     public TaskResponse getTaskById(Long id) {
-        return stubTask(id);
+        return taskRepository.findById(id)
+            .map(TaskResponse::from)
+            .orElseThrow(() -> new TaskNotFoundException(id));
     }
 
     @Override
+    @Transactional
     public TaskResponse createTask(CreateTaskRequest request) {
-        return new TaskResponse(
-            1L,
-            request.title(),
-            request.description(),
-            request.status(),
-            request.dueDate(),
-            LocalDateTime.now(),
-            LocalDateTime.now()
-        );
+        Task task = Task.builder()
+            .title(request.title())
+            .description(request.description())
+            .status(request.status())
+            .dueDate(request.dueDate())
+            .build();
+        return TaskResponse.from(taskRepository.save(task));
     }
 
     @Override
+    @Transactional
     public TaskResponse updateTaskStatus(Long id, UpdateTaskStatusRequest request) {
-        TaskResponse stub = stubTask(id);
-        return new TaskResponse(
-            stub.id(),
-            stub.title(),
-            stub.description(),
-            request.status(),
-            stub.dueDate(),
-            stub.createdAt(),
-            LocalDateTime.now()
-        );
+        Task task = taskRepository.findById(id)
+            .orElseThrow(() -> new TaskNotFoundException(id));
+        task.setStatus(request.status());
+        return TaskResponse.from(taskRepository.save(task));
     }
 
     @Override
+    @Transactional
     public void deleteTask(Long id) {
-        // TODO: implement when repository is ready
+        if (!taskRepository.existsById(id)) {
+            throw new TaskNotFoundException(id);
+        }
+        taskRepository.deleteById(id);
     }
 }
