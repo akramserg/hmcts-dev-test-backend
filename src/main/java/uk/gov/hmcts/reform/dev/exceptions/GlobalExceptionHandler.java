@@ -41,4 +41,14 @@ public class GlobalExceptionHandler {
             "timestamp", LocalDateTime.now().toString()
         ));
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+            "status", 500,
+            "error", "Internal Server Error",
+            "message", "An unexpected error occurred",
+            "timestamp", LocalDateTime.now().toString()
+        ));
+    }
 }
