@@ -162,6 +162,7 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-database-postgresql'
   runtimeOnly group: 'org.postgresql', name: 'postgresql'
   testRuntimeOnly group: 'com.h2database', name: 'h2'
+  integrationTestRuntimeOnly group: 'com.h2database', name: 'h2'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
 
