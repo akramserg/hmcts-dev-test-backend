@@ -8,3 +8,51 @@ can run the service in IntelliJ (or your IDE of choice) or however you normally 
 
 There is an example endpoint provided to retrieve an example of a case. You are free to add/remove fields as you
 wish.
+
+## Prerequisites
+
+- Java 21
+- Docker (for the local PostgreSQL database)
+
+## Running locally
+
+**1. Start the database**
+
+```bash
+docker run --name hmcts-tasks-postgres \
+  -e POSTGRES_DB=tasks \
+  -e POSTGRES_USER=tasks \
+  -e POSTGRES_PASSWORD=tasks \
+  -p 5433:5432 \
+  -d postgres:16
+```
+
+**2. Start the application**
+
+```bash
+DB_USER_NAME=tasks DB_PASSWORD=tasks ./gradlew bootRun
+```
+
+The API will be available at `http://localhost:4000`.
+
+Swagger UI: `http://localhost:4000/swagger-ui/index.html`
+
+## Running tests
+
+```bash
+# Unit tests
+./gradlew test
+
+# Integration tests
+./gradlew integration
+```
+
+## API endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/tasks` | List all tasks |
+| `POST` | `/tasks` | Create a task |
+| `GET` | `/tasks/{id}` | Get a task by ID |
+| `PATCH` | `/tasks/{id}` | Update task status |
+| `DELETE` | `/tasks/{id}` | Delete a task |
